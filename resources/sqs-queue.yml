@@ -1,0 +1,19 @@
+
+Resources:
+  BridgeQueue:
+    Type: 'AWS::SQS::Queue'
+    Properties:
+      QueueName: 'BridgeQueue'
+      VisibilityTimeout: 60  # Timeout in seconds
+      MessageRetentionPeriod: 1209600  # Retention period in seconds (14 days)
+      ReceiveMessageWaitTimeSeconds: 20  # Long polling wait time in seconds
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt BridgeDeadLetterQueue.Arn
+        maxReceiveCount: 5  # Number of times a message is delivered before moving to DLQ
+
+  BridgeDeadLetterQueue:
+    Type: 'AWS::SQS::Queue'
+    Properties:
+      QueueName: 'BridgeDeadLetterQueue'
+      MessageRetentionPeriod: 1209600  # Retention period in seconds (14 days)
+

@@ -1,0 +1,69 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  # DynamoDB Table
+  TransactionsTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: 'Transactions'
+      AttributeDefinitions:
+        - AttributeName: 'id'
+          AttributeType: 'S'
+        - AttributeName: 'userAddress'
+          AttributeType: 'S'
+      KeySchema:
+        - AttributeName: 'id'
+          KeyType: 'HASH'
+      GlobalSecondaryIndexes:
+        - IndexName: 'userAddress-index'
+          KeySchema:
+            - AttributeName: 'userAddress'
+              KeyType: 'HASH'
+          Projection:
+            ProjectionType: 'ALL'
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  # SQS Queue
+  BridgeQueue:
+    Type: 'AWS::SQS::Queue'
+    Properties:
+      QueueName: 'BridgeQueue'
+      VisibilityTimeout: 60  # Timeout in seconds
+      MessageRetentionPeriod: 1209600  # Retention period in seconds (14 days)
+      ReceiveMessageWaitTimeSeconds: 20  # Long polling wait time in seconds
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt BridgeDeadLetterQueue.Arn
+        maxReceiveCount: 5  # Number of times a message is delivered before moving to DLQ
+  # SQS Dead Letter Queue
+  BridgeDeadLetterQueue:
+    Type: 'AWS::SQS::Queue'
+    Properties:
+      QueueName: 'BridgeDeadLetterQueue'
+      MessageRetentionPeriod: 1209600  # Retention period in seconds (14 days)
+
+Outputs:
+  # DynamoDB Outputs
+  TransactionsTableName:
+    Description: 'Name of the Transactions DynamoDB table'
+    Value: !Ref TransactionsTable
+  TransactionsTableArn:
+    Description: 'ARN of the Transactions DynamoDB table'
+    Value: !GetAtt TransactionsTable.Arn
+
+  # SQS Outputs
+  BridgeQueueUrl:
+    Description: 'URL of the Bridge SQS queue'
+    Value: !Ref BridgeQueue
+  BridgeQueueArn:
+    Description: 'ARN of the Bridge SQS queue'
+    Value: !GetAtt BridgeQueue.Arn
+  BridgeDeadLetterQueueUrl:
+    Description: 'URL of the Bridge Dead Letter SQS queue'
+    Value: !Ref BridgeDeadLetterQueue
+  BridgeDeadLetterQueueArn:
+    Description: 'ARN of the Bridge Dead Letter SQS queue'
+    Value: !GetAtt BridgeDeadLetterQueue.Arn
