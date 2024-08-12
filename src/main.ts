@@ -6,8 +6,9 @@ import { ConfigService } from '@nestjs/config';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  const corsOrigins = app.get(ConfigService).get('CORS_ORIGINS')?.split(',');
   app.enableCors({
-    origin: ['http://localhost:3000'], // Replace with your allowed origins
+    origin: corsOrigins,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Allowed HTTP methods
     credentials: true,
   });
