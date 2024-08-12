@@ -5,7 +5,7 @@ import { GelatoRelay } from '@gelatonetwork/relay-sdk';
 import { ArbitrumProvider } from './providers/arbitrum.provider';
 import { OptimismProvider } from './providers/optimism.provider';
 import { NetworkProvider } from './interfaces/network-provider.interface';
-import { SupportedNetworks } from 'src/common/schemas/event-payload.schema';
+import { SupportedNetworks } from 'src/common/interfaces/supported-networks.enum';
 
 @Injectable()
 export class ContractService {
