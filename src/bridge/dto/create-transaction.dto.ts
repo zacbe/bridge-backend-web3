@@ -1,6 +1,6 @@
 import { IsString, IsNotEmpty, IsEnum } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { SupportedNetworks } from '../../../src/common/interfaces/supported-networks.enum';
+import { SupportedNetworks } from '../../common/interfaces/supported-networks.enum';
 
 export class CreateTransactionDto {
   @ApiProperty({ description: 'Amount of tokens to bridge' })
