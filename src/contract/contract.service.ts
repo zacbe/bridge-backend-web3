@@ -47,13 +47,13 @@ export class ContractService {
         user: walletOperator.address,
       };
 
-      console.log({ request });
-
       // Send the transaction using Gelato Relay
       const response = await this.relay.sponsoredCall(
         request,
         this.configService.get<string>('RELAY_API_KEY'),
       );
+
+      // TODO: check gelato relay transaction status
       this.logger.log('Burn transaction sent:', response);
     } catch (error) {
       this.logger.error('Error sending burn transaction:', error);
@@ -92,6 +92,8 @@ export class ContractService {
         request,
         this.configService.get<string>('RELAY_API_KEY'),
       );
+
+      // TODO: check gelato relay transaction status
       this.logger.log('Mint transaction sent:', response);
     } catch (error) {
       this.logger.error('Error sending mint transaction:', error);
