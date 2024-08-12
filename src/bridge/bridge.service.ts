@@ -8,10 +8,8 @@ import {
   TransactionStatus,
 } from './interfaces/transaction.interface';
 import { EventFactory } from '../common/factories/event-factory';
-import {
-  EventPayload,
-  EventType,
-} from '../common/schemas/event-payload.schema';
+import { EventPayload } from '../common/schemas/event-payload.schema';
+import { EventType } from '../common/interfaces/event-types.enum';
 
 @Injectable()
 export class BridgeService {
