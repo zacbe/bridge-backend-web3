@@ -39,10 +39,10 @@ export class SqsWorkerService {
         await this.handleBridgeEvent(message);
         break;
       case EventType.BURN:
-        await this.handleBurnEvent(message);
+        await this.handleBurnedEvent(message);
         break;
       case EventType.MINT:
-        await this.handleMintEvent(message);
+        await this.handleMintedEvent(message);
         break;
       default:
         this.logger.warn(`Unknown event type: ${message.type}`);
@@ -57,50 +57,36 @@ export class SqsWorkerService {
 
       if (transaction.status === 'PENDING') {
         const sourceNetwork = this.getNetwork(message.from);
-
         await this.contractService.burnTokens(sourceNetwork, message.amount);
-        await this.dynamoDBService.updateTransactionStatus(
-          message.transactionId,
-          'BURNED',
-        );
       }
     } catch (error) {
       this.logger.error('Error handling bridge event:', error);
     }
   }
 
-  private async handleBurnEvent(message: EventPayload): Promise<void> {
+  private async handleBurnedEvent(message: EventPayload): Promise<void> {
     try {
       const destinationNetwork = this.getNetwork(message.to);
-
       await this.contractService.mintTokens(destinationNetwork, message.amount);
+
+      // update transaction status
       await this.dynamoDBService.updateTransactionStatus(
         message.transactionId,
-        'COMPLETED',
+        'BURNED',
       );
     } catch (error) {
       this.logger.error('Error handling burn event:', error);
     }
   }
 
-  private async handleMintEvent(message: EventPayload): Promise<void> {
-    try {
-      await this.dynamoDBService.updateTransactionStatus(
-        message.transactionId,
-        'COMPLETED',
-      );
-      this.logger.log(
-        `Transaction ${message.transactionId} marked as COMPLETED`,
-      );
-    } catch (error) {
-      this.logger.error('Error handling mint event:', error);
-    }
-  }
+  private async handleMintedEvent(message: EventPayload): Promise<void> {
+    this.logger.log(`Transaction ${message.transactionId} marked as COMPLETED`);
 
-  private async sendMessageToSqs(message: EventPayload): Promise<void> {
-    const queueUrl = this.configService.get<string>('SQS_QUEUE_URL');
-    await this.sqsService.sendMessage(queueUrl, JSON.stringify(message));
-    this.logger.log(`Sent message to SQS: ${JSON.stringify(message)}`);
+    // update transaction status
+    await this.dynamoDBService.updateTransactionStatus(
+      message.transactionId,
+      'COMPLETED',
+    );
   }
 
   private getNetwork(network: string): SupportedNetworks {
