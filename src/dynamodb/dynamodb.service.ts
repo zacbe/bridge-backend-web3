@@ -82,4 +82,29 @@ export class DynamoDBService {
     const result = await this.query(params);
     return result.Items;
   }
+
+  async updateTransactionDetails(
+    id: string,
+    networkType: 'from' | 'to',
+    transactionHash: string,
+    timestamp: string,
+  ) {
+    const params: UpdateCommandInput = {
+      TableName: process.env.DYNAMODB_TABLE_NAME,
+      Key: { id },
+      UpdateExpression: `SET #network.#transactionHash = :transactionHash, #network.#timestamp = :timestamp`,
+      ExpressionAttributeNames: {
+        '#network': networkType,
+        '#transactionHash': 'transactionHash',
+        '#timestamp': 'timestamp',
+      },
+      ExpressionAttributeValues: {
+        ':transactionHash': transactionHash,
+        ':timestamp': timestamp,
+      },
+      ReturnValues: 'UPDATED_NEW',
+    };
+
+    return this.updateItem(params);
+  }
 }
